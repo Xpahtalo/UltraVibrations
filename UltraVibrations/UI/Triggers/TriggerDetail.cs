@@ -1,6 +1,4 @@
-using System;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -16,8 +14,7 @@ namespace UltraVibrations.UI.Triggers;
 
 public class TriggerDetails(TriggerManagerService triggerManagerService) : IService
 {
-    private string phraseToAdd = String.Empty;
-    private bool phraseIsValidRegex = true;
+    private PhraseInput phraseInput = new();
     
     public void Draw(string? triggerId)
     {
@@ -97,7 +94,6 @@ public class TriggerDetails(TriggerManagerService triggerManagerService) : IServ
                     }
 
                     ImGui.Spacing();
-
                     ImGui.TableNextColumn();
                     ImGui.Spacing();
                     ImGui.Text(matchedPhrase);
@@ -105,40 +101,13 @@ public class TriggerDetails(TriggerManagerService triggerManagerService) : IServ
             }
             
             ImGui.Spacing();
-            if (!phraseIsValidRegex)
-            {
-                ImGui.BeginDisabled();
-            }
-            
-            if (ImGui.Button("Add"))
+            var phraseToAdd = phraseInput.Draw();
+            if (phraseToAdd is not null)
             {
                 trigger.ChatSettings.MatchedPhrases.Add(phraseToAdd);
                 trigger.Save();
             }
             
-            if (!phraseIsValidRegex)
-            {
-                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
-                {
-                    ImGui.SetTooltip("This phrase is invalid regex");
-                }
-                ImGui.EndDisabled();
-            }
-            
-            ImGui.SameLine();
-            var newPhraseUpdated = ImGui.InputText("##NewPhrase", ref phraseToAdd, 2048);
-            if (newPhraseUpdated)
-            {
-                try
-                {
-                    _ = new Regex(phraseToAdd);
-                    phraseIsValidRegex = true;
-                }
-                catch (ArgumentException)
-                {
-                    phraseIsValidRegex = false;
-                }
-            }
             ImGui.Spacing();
         }
 
